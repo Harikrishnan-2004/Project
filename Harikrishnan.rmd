@@ -1,0 +1,205 @@
+---
+title: "Project"
+author: "Harikrishnan"
+date: "2025-02-09"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(rpart)
+library(rpart.plot)
+library(caret)
+library(randomForest)
+rfNews()
+```
+```{r}
+Attrition_Dataset=read.csv("C:/Users/harik/Downloads/train.csv")
+
+```
+```{r}
+# 1. Age Distribution (Histogram)
+ggplot(Attrition_Dataset, aes(x=Age)) +  geom_histogram(binwidth=5, fill="steelblue", color="black") + labs(title="Age Distribution", x="Age", y="Count")
+```
+```{r}
+ggplot(Attrition_Dataset, aes(x=Job.Level, y=Monthly.Income)) +  geom_boxplot(fill="lightblue", color="black") +  labs(title="Monthly Income by Job Level", x="Job Level", y="Monthly Income")
+```
+```{r}
+# 3. Attrition Count by Gender (Bar Chart)
+ggplot(Attrition_Dataset, aes(x=Gender, fill=Attrition)) +geom_bar(position="dodge") + labs(title="Attrition Count by Gender", x="Gender", y="Count")
+```
+```{r}
+# 4. Job Satisfaction vs. Work-Life Balance (Stacked Bar Chart)
+ggplot(Attrition_Dataset, aes(x=Work.Life.Balance, fill=Job.Satisfaction)) +  geom_bar(position="fill") + labs(title="Job Satisfaction vs Work-Life Balance", x="Work-Life Balance", y="Proportion")
+```
+```{r}
+# 5. Years at Company vs. Monthly Income (Scatter Plot)
+ggplot(Attrition_Dataset, aes(x=Years.at.Company, y=Monthly.Income)) + geom_point(alpha=0.5, color="blue") +  labs(title="Years at Company vs Monthly Income", x="Years at Company", y="Monthly Income")
+
+```
+```{r}
+summary(Attrition_Dataset)
+```
+
+
+
+```{r}
+ggplot(Attrition_Dataset, aes(x = "", y = Attrition_Dataset$Employee.ID, fill = Attrition)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  ggtitle("Attrition Pie Chart")
+```
+
+
+```{r}
+View(Attrition_Dataset)
+dim(Attrition_Dataset)
+str(Attrition_Dataset)
+```
+```{r}
+colSums(is.na(Attrition_Dataset))
+```
+```{r}
+Attrition_Dataset$Marital.Status = as.factor(Attrition_Dataset$Marital.Status)
+Attrition_Dataset$Attrition = as.factor(Attrition_Dataset$Attrition)
+Attrition_Dataset
+```
+```{r}
+glm.fitt=glm(as.factor(Attrition)~.,data = Attrition_Dataset,family = binomial)
+summary(glm.fitt)
+```
+```{r}
+set.seed(17)
+index=sample(1:nrow(Attrition_Dataset),size = 0.75*nrow(Attrition_Dataset))
+train_data=Attrition_Dataset[index,]
+test_data=Attrition_Dataset[-index,]
+```
+
+```{r}
+final_model <- glm(as.factor(Attrition) ~ Gender + Years.at.Company + Job.Role + 
+                   Work.Life.Balance + Job.Satisfaction + Performance.Rating + 
+                   Number.of.Promotions + Overtime + Marital.Status + 
+                   Company.Reputation + Innovation.Opportunities + 
+                   Leadership.Opportunities + Remote.Work + 
+                   Number.of.Dependents + Job.Level, 
+                   data = train_data, family = binomial)
+
+summary(final_model)
+```
+
+
+```{r}
+predicted_prob <- predict(final_model, newdata = test_data, type = "response")
+predicted_class <- ifelse(predicted_prob > 0.5, "Stayed", "Left")
+conf_matrix <- table(Predicted = predicted_class, Actual = factor(test_data$Attrition))
+sum(diag(conf_matrix)) / sum(conf_matrix)
+```
+
+```{r}
+rf_model <- randomForest(as.factor(Attrition) ~ ., data = train_data, ntree = 100)
+rf_preds <- predict(rf_model, test_data)
+summary(rf_model)
+```
+```{r}
+rf_model <- randomForest(as.factor(Attrition) ~ ., data = train_data)
+
+# Make predictions on the test set
+predictions <- predict(rf_model, test_data)
+
+# Evaluate model performance
+conf_matrix <- confusionMatrix(predictions, factor(test_data$Attrition))
+
+# Print the confusion matrix
+print(conf_matrix)
+
+# Calculate and print the accuracy
+accuracy <- conf_matrix$overall['Accuracy']
+print(paste("Accuracy: ", accuracy))
+
+# Additional performance metrics
+precision <- conf_matrix$byClass['Pos Pred Value']
+recall <- conf_matrix$byClass['Sensitivity']
+f1_score <- 2 * (precision * recall) / (precision + recall)
+print(paste("Precision: ", precision))
+print(paste("Recall: ", recall))
+print(paste("F1 Score: ", f1_score))
+```
+
+
+```{r}
+set.seed(17)
+index <- sample(1:nrow(Attrition_Dataset), size = 0.75 * nrow(Attrition_Dataset))
+train_data <- Attrition_Dataset[index, ]
+test_data <- Attrition_Dataset[-index, ]
+```
+```{r}
+as.factor(test_data$Attrition)
+```
+```{r}
+predictions <- predict(rf_model,test_data)
+
+predictions <- factor(predictions, levels = levels(test_data$Attrition))
+```
+
+```{r}
+predictions <- predict(rf_model,test_data)
+
+predictions <- factor(predictions, levels = levels(test_data$Attrition))
+
+# Generate the confusion matrix
+confs_matrix <- confusionMatrix(predictions,test_data$Attrition)
+
+# Print the confusion matrix
+print(conf_matrix)
+
+# Calculate and print the accuracy
+accuracy <- conf_matrix$overall['Accuracy']
+print(paste("Accuracy: ", accuracy))
+```
+```{r}
+predicted <- factor(predictions)
+actual <- factor(actual)
+
+```
+
+```{r}
+tree_model <- rpart(Attrition ~ ., data=train_data, method="class", control=rpart.control(cp=0.01))
+summary(tree_model)
+
+# Make predictions on the test set
+predictions <- predict(tree_model, newdata=test_data, type="class")
+# Create confusion matrix
+conf_matrix <- confusionMatrix(predictions, factor(test_data$Attrition))
+```
+```{r}
+# Visualize the tree
+rpart.plot(tree_model, extra=104, type=5, tweak=1.2, box.palette="auto")
+```
+
+
+```{r}
+# Print confusion matrix and accuracy
+print(conf_matrix)
+accuracy <- conf_matrix$overall['Accuracy']
+print(paste("Decision Tree Model Accuracy:", accuracy))
+```
+```{r}
+data.frame(Actual = test_data$Attrition, Glm_Prediction = predicted_class, Rf_prediction = rf_preds, decision_tree = predictions)
+```
+
+
+```{r}
+dim(Attrition_Dataset)
+```
+
+```{r}
+# Load necessary libraries
+ggplot(Attrition_Dataset,mapping = aes(Job.Role,Employee.ID,colour = Attrition))+geom_col()
+```
+
+```{r}
+str(Attrition_Dataset)
+```
+
