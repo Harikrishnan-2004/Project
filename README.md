@@ -44,3 +44,10 @@ Output generation and reporting
 📊 Results
 
 The project successfully meets the defined objectives and provides accurate results. It improves efficiency compared to manual or traditional methods and demonstrates the effective use of technology in solving real-world problems.
+## 📌 Note on Dashboard Variations
+The dashboard visuals may appear different across screenshots due to the use of slicers 
+such as Attrition Status, Job Level, Leadership Role, and Overtime.
+
+Power BI dynamically updates all KPIs and charts based on the selected filters. 
+This interactivity allows users to analyze employee attrition from multiple perspectives.
+
